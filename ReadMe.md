@@ -1,35 +1,43 @@
 # JCtrans Scraper — Complete Guide
 
+> 📧 **Feeling puzzled? Email us for the code and a complete setup guide:** **[Freightdataus@gmail.com](mailto:Freightdataus@gmail.com)**
+
 A two-stage, resumable Selenium + BeautifulSoup tool that signs in to JCtrans, walks the **Company Directory**, opens **every company profile**, and saves company details plus **every visible contact** (name, title, emails, all phone variants) to TXT, JSON and CSV files.
 
 Script file: `jctrans_scraper.py` (you run it as `jct.py` — the name does not matter, use whichever filename you saved).
+
+> ⚠️ **Before you run it:** use this tool only with an account **you are personally authorised to use**, and only in ways JCtrans' terms allow. See [Security](#17-security) and [Legal notices and terms of use](#18-legal-notices-and-terms-of-use). The code is released under the [MIT License](#19-license), which covers the code only, not JCtrans' data.
 
 ---
 
 ## 1. Contents
 
-1. [Quick start](#2-quick-start)
-2. [Installation](#3-installation)
-3. [Signing in](#4-signing-in)
-4. [How it works (workflow)](#5-how-it-works-workflow)
-5. [Command-line options](#6-command-line-options)
-6. [Command cookbook](#7-command-cookbook)
-7. [Selecting pages](#8-selecting-pages--important-behaviours)
-8. [Output files](#9-output-files)
-9. [Data model](#10-data-model)
-10. [Resume, retry and fault tolerance](#11-resume-retry-and-fault-tolerance)
-11. [What was verified, and what was not](#12-what-was-verified-and-what-was-not)
-12. [Change log](#13-change-log--what-changed-over-time)
-13. [Troubleshooting](#14-troubleshooting)
-14. [Limitations](#15-limitations)
-15. [Responsible use](#16-responsible-use)
+- [2. Quick start](#2-quick-start)
+- [3. Installation](#3-installation)
+- [4. Signing in](#4-signing-in)
+- [5. How it works (workflow)](#5-how-it-works-workflow)
+- [6. Command-line options](#6-command-line-options)
+- [7. Command cookbook](#7-command-cookbook)
+- [8. Selecting pages](#8-selecting-pages--important-behaviours)
+- [9. Output files](#9-output-files)
+- [10. Data model](#10-data-model)
+- [11. Resume, retry and fault tolerance](#11-resume-retry-and-fault-tolerance)
+- [12. What was verified, and what was not](#12-what-was-verified-and-what-was-not)
+- [13. Change log](#13-change-log--what-changed-over-time)
+- [14. Troubleshooting](#14-troubleshooting)
+- [15. Limitations](#15-limitations)
+- [16. Responsible use](#16-responsible-use)
+- [17. Security](#17-security)
+- [18. Legal notices and terms of use](#18-legal-notices-and-terms-of-use)
+- [19. License](#19-license)
+- [20. Support](#20-support)
 
 ---
 
 ## 2. Quick start
 
 ```powershell
-cd D:\logi\jc
+cd Logistics\jc
 python -m pip install selenium webdriver-manager beautifulsoup4
 
 # set credentials for this terminal session only
@@ -119,6 +127,8 @@ Other ways:
 
 Always add `--user-data-dir chrome_profile`. Chrome stores the session in that folder, so later runs usually say `[AUTH] Signed-in session detected` and skip login completely. Headless mode (`--headless`) only works when that folder already holds a valid login, because a manual sign-in is impossible without a visible window.
 
+> The `chrome_profile` folder holds a live login session. Treat it like a password (see [Security](#17-security)).
+
 > If a password has ever been pasted into a chat, email or ticket, change it on JCtrans.
 
 ---
@@ -193,9 +203,6 @@ Arguments are validated before the browser starts (for example `--start-page` ca
 All examples use PowerShell and `jct.py`; on macOS/Linux use `python3` and your filename.
 
 **Small test**
-
-1st:
-python jct.py --stage all --max-pages 1 --max-companies 3 --debug-html --user-data-dir chrome_profile
 
 ```powershell
 python jct.py --stage all --max-pages 1 --max-companies 3 --debug-html --user-data-dir chrome_profile
@@ -451,12 +458,12 @@ Rules the script follows:
 | Run only did 20 companies | `--max-companies 20` was set. Use `--max-companies 0`. |
 | Previous data seems gone | You ran without `--resume`. Look for `state_backup_<timestamp>` and `*.bak_<timestamp>*` files in the output folder. |
 | A page-range run also processes older companies | Stage B uses the whole unfinished queue. See section 8. |
-| Many `none_visible` contacts | Open `debug_html/<id>.txt`; the `contact_extraction_notes` field says whether the section was absent, empty, or unmatched. Send me a sample file if it looks like a selector problem. |
+| Many `none_visible` contacts | Open `debug_html/<id>.txt`; the `contact_extraction_notes` field says whether the section was absent, empty, or unmatched. Email us a sample file if it looks like a selector problem. |
 | `[PAUSE]` message | The site showed a restriction/verification page. Resolve it in the browser (or stop the run), then press ENTER. Slow down with a larger `--delay`. |
 | Headless run asks for login | The profile folder holds no valid session. Sign in once with a visible window using the same `--user-data-dir`. |
 | Excel shows phone numbers oddly | Open the CSV via Data → From Text/CSV and keep the phone columns as text; the JSON-array format is designed to stay text. |
 
-Logs: `output/jctrans_scraper.log`. Send that file (and any `debug_html` samples) when asking for help.
+Logs: `output/jctrans_scraper.log`. Send that file (and any `debug_html` samples) when asking for help — **after removing anything sensitive** (see [Security](#17-security)).
 
 ---
 
@@ -467,9 +474,137 @@ Logs: `output/jctrans_scraper.log`. Send that file (and any `debug_html` samples
 - The site can change its HTML; selectors are centralised in the `SELECTORS` block at the top of the script for easy updates.
 - Very long runs depend on your session, network and the site's tolerance for load; use batches and keep the delay conservative.
 - Establishment year, membership dates and descriptions are copied as displayed. The script does not calculate or correct them (for example a description may state a founding year different from the "Establishment Time" field; both are kept as shown).
+- Output is text copied from a web page. It is not verified, may be out of date, and may not be deliverable or accurate.
 
 ---
 
 ## 16. Responsible use
 
 Use the tool only with your own authorised account and only for business purposes that comply with JCtrans' terms of service and applicable privacy and anti-spam laws. The script does not bypass login, CAPTCHA, MFA or rate limits, does not submit forms or send messages, and collects only business contact details that are visible to your account. Keep the output files secure, since they contain personal business contact data.
+
+**Do not:**
+
+- use another person's login unless the platform's terms and that person's authorisation clearly allow it;
+- run several copies in parallel or lower `--delay` to pressure the site;
+- try to unmask `restricted` values, defeat CAPTCHA/MFA, or work around rate limits;
+- resell, publish or redistribute the collected data unless your agreement with JCtrans allows it;
+- send bulk unsolicited email or messages to collected contacts without a lawful basis and honouring opt-outs.
+
+Paid access to a platform does not by itself authorise every kind of automated extraction, reuse or redistribution. Confirm what your plan allows.
+
+---
+
+## 17. Security
+
+### 17.1 Credentials
+
+- Credentials are read from `JCTRANS_USER` / `JCTRANS_PASS` or the hidden prompt, held in memory only, and never written to logs or output files. **Never hard-code them in the script.**
+- Set environment variables per terminal session. Do not put them in shell history, scripts you commit, screenshots, tickets or chats.
+- If a password was ever shared or pasted anywhere, **change it on JCtrans immediately.**
+- Prefer a secrets manager or OS keychain for long-term use.
+
+### 17.2 The Chrome profile folder
+
+`chrome_profile/` (or whatever you pass to `--user-data-dir`) stores cookies and a **live signed-in session**. Anyone who copies it may act as you on the site.
+
+- Never commit, zip, email or share it.
+- Restrict access to your user account only.
+- Delete it when you no longer need the saved login, and sign out on the site.
+
+### 17.3 Collected data
+
+The output files contain personal business contact data (names, job titles, emails, phone numbers).
+
+- Store them on encrypted disks; restrict permissions (for example `chmod 600` on macOS/Linux).
+- Keep only what you need and define a retention period; delete the rest.
+- Do not upload them to public repositories, public cloud links or shared drives without access control.
+- Share only with people who have a legitimate need.
+
+### 17.4 Debug and log files
+
+`--debug-html` saves full rendered pages, and `jctrans_scraper.log` records run details. Both can include account or third-party data. Review and redact before sending them to anyone, and delete them after troubleshooting.
+
+### 17.5 Recommended `.gitignore`
+
+```gitignore
+# secrets and sessions
+.env
+chrome_profile/
+
+# scraped data and runtime files
+output/
+batch_*/
+state/
+debug_html/
+*.bak_*
+state_backup_*/
+jc.txt
+*.log
+```
+
+If any of these were ever committed, removing them in a later commit is **not enough** — they stay in Git history. Purge history (for example with `git filter-repo`) and treat any exposed password as compromised.
+
+### 17.6 Network and browser
+
+- Run on a trusted machine and network. Keep Chrome, ChromeDriver and Python packages updated.
+- Do not run `--no-sandbox`-style flags or unknown forks of the script.
+- Install dependencies only from official sources (`pip` / PyPI).
+
+### 17.7 Reporting a vulnerability
+
+If you find a security problem in this code, please email **[Freightdataus@gmail.com](mailto:Freightdataus@gmail.com)** with a description and steps to reproduce. Do not post sensitive details in a public issue. Never include credentials, session folders or scraped data in a report.
+
+---
+
+## 18. Legal notices and terms of use
+
+*These notices are general information, not legal advice. Consult a qualified lawyer for your situation.*
+
+1. **Authorised access only.** You must use this software only with an account you are authorised to use, in line with JCtrans' terms of service, acceptable-use rules and any agreement you have with them. You are solely responsible for checking that automated access, bulk collection, storage and reuse of data are permitted.
+2. **No affiliation.** This project is independent. It is not affiliated with, endorsed by, or sponsored by JCtrans or any company mentioned. "JCtrans" and other names are trademarks of their respective owners and are used only to describe compatibility.
+3. **No rights to third-party data.** The license covers the source code only. It grants no rights to JCtrans' website, databases, content or the data collected from it. Ownership of that data stays with its owners.
+4. **Data protection and anti-spam laws.** Collected contact data may be personal data under laws such as GDPR / UK GDPR, CCPA/CPRA, India's DPDP Act, China's PIPL, CAN-SPAM, CASL and similar rules. You are responsible for having a lawful basis, giving required notices, honouring opt-out and deletion requests, securing the data, and following cross-border transfer rules.
+5. **No warranty.** The software is provided "as is", without warranty of any kind. Selectors depend on the site's current HTML and may stop working at any time. Output may be incomplete, inaccurate or outdated.
+6. **Limitation of liability.** To the maximum extent permitted by law, the authors and contributors are not liable for any claim, loss or damage arising from use of the software or the data it collects, including account suspension, loss of access, legal claims, or business loss.
+7. **User responsibility.** Anything you do with the tool or its output, including how you contact people, is your own responsibility. You agree to use it lawfully and ethically.
+8. **Acceptable use.** Do not use the software to harass, spam, defraud, stalk or harm anyone, to attack or overload any system, or to bypass security controls.
+9. **Removal requests.** If you are a person or company whose information appears in data collected with this tool and you want it removed, contact the person operating the tool, or email **[Freightdataus@gmail.com](mailto:Freightdataus@gmail.com)** and we will help route the request.
+10. **Changes.** These notices and the documentation may be updated at any time. Using newer versions means you accept the current notices.
+
+---
+
+## 19. License
+
+Released under the **MIT License**. See the [`LICENSE`](LICENSE) file for the full text.
+
+In short: you may use, copy, modify, merge, publish, distribute and sublicense the code, provided the copyright and license notice are kept, and the software comes with **no warranty**.
+
+The MIT License applies to this project's **source code only**. It does **not**:
+
+- grant any right to JCtrans' services, content or data;
+- override JCtrans' terms of service or any law that applies to you;
+- authorise anyone to use credentials, sessions or data they are not permitted to use.
+
+Third-party libraries (Selenium, webdriver-manager, BeautifulSoup) keep their own licenses.
+
+```text
+Copyright (c) 2026 [Shub Saini]
+```
+
+---
+
+## 20. Support
+
+**Puzzled by installation, login, Chrome/driver errors, page ranges or resuming a run?**
+
+📧 **Email us for the code and a complete setup guide: [Freightdataus@gmail.com](mailto:Freightdataus@gmail.com)**
+
+To help us answer quickly, include:
+
+- your operating system and Python version (`python --version`);
+- the exact command you ran;
+- the last 20–30 lines of `output/jctrans_scraper.log`, with anything sensitive removed.
+
+**Never send** passwords, the `chrome_profile` folder, or scraped contact data.
+
+Working in logistics or freight forwarding and have an authorised JCtrans account with repetitive data tasks you want to automate? Get in touch at the same address.
